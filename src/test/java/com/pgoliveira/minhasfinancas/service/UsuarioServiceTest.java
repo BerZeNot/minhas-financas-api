@@ -3,7 +3,8 @@ package com.pgoliveira.minhasfinancas.service;
 import java.util.Optional;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -27,7 +28,7 @@ public class UsuarioServiceTest {
 	@MockBean
 	UsuarioRepository repository;
 	
-	@Test(expected = Test.None.class)
+	@Test
 	public void deveSalvarUmUsuario() {
 		// cenário
 		Mockito.doNothing().when(service).validarEmail(Mockito.anyString());
@@ -51,7 +52,7 @@ public class UsuarioServiceTest {
 		
 	}
 	
-	@Test(expected = RegraNegocioException.class)
+	@Test
 	public void naoDeveSalvarUmUsuarioComEmailJaCadastrado() {
 		// cenário
 		String email = "email@email.com";
@@ -59,14 +60,16 @@ public class UsuarioServiceTest {
 		Mockito.doThrow(RegraNegocioException.class).when(service).validarEmail(email);
 
 		// ação
-		service.salvarUsuario(usuario);
+		Assert.assertThrows(RegraNegocioException.class, () -> {
+			service.salvarUsuario(usuario);
+		});
 		
 		// verificação
 		Mockito.verify(repository, Mockito.never()).save(usuario);
 		
 	}
 	
-	@Test(expected = Test.None.class)
+	@Test
 	public void deveAutenticarUmUsuarioComSucesso() {
 		// cenário
 		String email = "email@email.com";
@@ -111,7 +114,7 @@ public class UsuarioServiceTest {
 		Assertions.assertThat(exception).isInstanceOf(ErroAutenticacao.class).hasMessage("Senha inválida.");
 	}
 	
-	@Test(expected = Test.None.class)
+	@Test
 	public void deveValidarEmail() {
 		// cenário
 		Mockito.when(repository.existsByEmail(Mockito.anyString())).thenReturn(false);
@@ -120,11 +123,15 @@ public class UsuarioServiceTest {
 		service.validarEmail("email@email.com");
 	}
 	
-	@Test(expected = RegraNegocioException.class)
+	@Test
 	public void deveLancarErroAoValidarEmailQuandoExistirEmailCadastrado() {
 		// cenário
 		Mockito.when(repository.existsByEmail(Mockito.anyString())).thenReturn(true);
+		
 		// ação
-		service.validarEmail("email@email.com");
+		Assert.assertThrows(RegraNegocioException.class, () ->{
+			service.validarEmail("email@email.com");
+		});
+		
 	}
 }
