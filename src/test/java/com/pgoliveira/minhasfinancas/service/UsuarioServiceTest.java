@@ -1,9 +1,10 @@
 package com.pgoliveira.minhasfinancas.service;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.util.Optional;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -60,7 +61,7 @@ public class UsuarioServiceTest {
 		Mockito.doThrow(RegraNegocioException.class).when(service).validarEmail(email);
 
 		// ação
-		Assert.assertThrows(RegraNegocioException.class, () -> {
+		assertThrows(RegraNegocioException.class, () -> {
 			service.salvarUsuario(usuario);
 		});
 		
@@ -129,7 +130,7 @@ public class UsuarioServiceTest {
 		Mockito.when(repository.existsByEmail(Mockito.anyString())).thenReturn(true);
 		
 		// ação
-		Assert.assertThrows(RegraNegocioException.class, () ->{
+		assertThrows(RegraNegocioException.class, () ->{
 			service.validarEmail("email@email.com");
 		});
 		
