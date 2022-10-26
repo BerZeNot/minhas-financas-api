@@ -3,6 +3,7 @@ package com.pgoliveira.minhasfinancas.service.impl;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,11 +17,13 @@ import com.pgoliveira.minhasfinancas.service.UsuarioService;
 public class UsuarioServiceImpl implements UsuarioService{
 	
 	private UsuarioRepository repository;
+	private PasswordEncoder encoder;
 	
 	@Autowired
-	public UsuarioServiceImpl(UsuarioRepository repository) {
+	public UsuarioServiceImpl(UsuarioRepository repository, PasswordEncoder encoder) {
 		super();
 		this.repository = repository;
+		this.encoder = encoder;
 	}
 
 	
@@ -29,9 +32,11 @@ public class UsuarioServiceImpl implements UsuarioService{
 		Optional<Usuario> usuario = repository.findByEmail(email);
 		if(!usuario.isPresent()) {
 			throw new ErroAutenticacao("Usuário não encontrado para o email informado.");
-		} 
+		}
 		
-		if(!usuario.get().getSenha().equals(senha)) {
+		boolean senhaCorreta = encoder.matches(senha, usuario.get().getSenha());
+		
+		if(!senhaCorreta) {
 			throw new ErroAutenticacao("Senha inválida.");
 		}
 		
@@ -42,8 +47,14 @@ public class UsuarioServiceImpl implements UsuarioService{
 	@Transactional
 	public Usuario salvarUsuario(Usuario usuario) {
 		validarEmail(usuario.getEmail());
+		criptografarSenha(usuario);
 		return repository.save(usuario);
 	}
+
+	private void criptografarSenha(Usuario usuario) {
+		usuario.setSenha(encoder.encode(usuario.getSenha()));		
+	}
+
 
 	@Override
 	public void validarEmail(String email) {
